@@ -56,12 +56,12 @@ metadata {
 	tiles {
 		multiAttributeTile(name: "mediaMulti", type:"mediaPlayer", width:6, height:4, canChangeIcon: true) {
             tileAttribute("device.status", key: "PRIMARY_CONTROL") {
-                attributeState("playing", label:"Playing", icon:"https://github.com/fison67/mi_connector/blob/master/icons/googleHome-off.png?raw=true", backgroundColor:"#00a0dc")
-                attributeState("Ready to cast", label:"Ready to cast", icon:"https://github.com/fison67/mi_connector/blob/master/icons/googleHome-off.png?raw=true")
+                attributeState("playing", label:"Playing", icon:"https://github.com/fison67/GH-Connector/blob/master/images/googleHome-off.png?raw=true", backgroundColor:"#00a0dc")
+                attributeState("Ready to cast", label:"Ready to cast", icon:"https://github.com/fison67/GH-Connector/blob/master/images/googleHome-off.png?raw=true")
             }
             tileAttribute("device.status", key: "MEDIA_STATUS") {
-                attributeState("playing", label:"Playing", icon:"https://github.com/fison67/mi_connector/blob/master/icons/googleHome-off.png?raw=true", action:"music Player.stop", nextState: "stop", backgroundColor:"#00a0dc")
-                attributeState("Ready to cast", label:"Ready to cast", action:"", nextState: "Ready to cast", icon:"https://github.com/fison67/mi_connector/blob/master/icons/googleHome-off.png?raw=true")
+                attributeState("playing", label:"Playing", icon:"https://github.com/fison67/GH-Connector/blob/master/images/googleHome-off.png?raw=true", action:"music Player.stop", nextState: "stop", backgroundColor:"#00a0dc")
+                attributeState("Ready to cast", label:"Ready to cast", action:"", nextState: "Ready to cast", icon:"https://github.com/fison67/GH-Connector/blob/master/images/googleHome-off.png?raw=true")
             }
             tileAttribute("device.status", key: "PREVIOUS_TRACK") {
                 attributeState("status", action:"music Player.previousTrack", defaultState: true)
@@ -172,7 +172,7 @@ def updated() {
     setLanguage(settings.selectedLang)
     
     if(state.lastTTS != settings.tts){
-    	makeCommand("tts", [getLanguage(), settings.tts])
+    	makeCommand("tts", [getLanguage(), settings.tts, -1])
     }
     state.lastTTS = settings.tts
 }
