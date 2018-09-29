@@ -1,5 +1,5 @@
 /**
- *  GH Connector (v.0.0.1)
+ *  GH Connector (v.0.0.2)
  *
  * MIT License
  *
@@ -54,8 +54,10 @@ def mainPage() {
     dynamicPage(name: "mainPage", title: "GH Connector", nextPage: null, uninstall: true, install: true) {
    		section("Request New Devices"){
         	input "address", "string", title: "Server address", required: true
+        	input "address2", "string", title: "Port forwarding Server address", required: false
             input(name: "selectedLang", title:"Select a language" , type: "enum", required: true, options: languageList, defaultValue: "English", description:"Language for DTH")
-        	href url:"http://${settings.address}", style:"embedded", required:false, title:"Management", description:"This makes you easy to setup"
+        	href url:"http://${settings.address}", style:"embedded", required:false, title:"Local Management", description:"This makes you easy to setup"
+        	href url:"http://${settings.address2}", style:"embedded", required:false, title:"External Management", description:"This makes you easy to setup"
         }
         
        	section() {
@@ -90,45 +92,6 @@ def updated() {
 //    unsubscribe()
     // Subscribe to stuff
     initialize()
-}
-
-def addMonitorDevice(target, remoteDevice, attr, data){
-	log.debug "IR Mapping >> " + target.deviceNetworkId + " >> Target(" + state.selectedDeviceNetworkID + ") Attr >> " + attr
-	// Init
-	if(state.monitorMap == null){
-    	state.monitorMap = [:]
-    }
-    // Add
-    def item = [:]
-    item['id'] = target.deviceNetworkId
-    item['data'] = data
-    state.monitorMap[remoteDevice] = item
-    
-    log.debug state.monitorMap
-    
-    unsubscribe(target)
-    subscribe(target, attr, stateChangeHandler)
-}
-
-def stateChangeHandler(event){
-    def deviceNetworkID = event.getDevice().deviceNetworkId
-    setStateRemoteDevice(event.name, event.value, getDeviceToNotifyList(deviceNetworkID) )
-}
-
-def setStateRemoteDevice(eventName, eventValue, list){
-	log.debug "setStateRemoteDevice >> " + eventName + " [" + eventValue + "]"
-	for(item in list){
-        def targetRemoteDevice = getChildDevice(item.id)
-        if(targetRemoteDevice){
-            if(eventName == "contact"){
-                targetRemoteDevice.setStatus( eventValue == "open" ? (item.data.default == "open" ? "on" : "off") : (item.data.default == "open" ? "off" : "on") )
-            }else if(eventName == "power"){
-            	targetRemoteDevice.setStatus( (item.data.min <= Float.parseFloat(eventValue) && Float.parseFloat(eventValue) <= item.data.max) ? "on" : "off" )
-            }else if(eventName == "presence"){
-            	targetRemoteDevice.setStatus( eventValue == "present" ? "on" : "off" )
-            }
-        }
-    }
 }
 
 /**
@@ -187,7 +150,7 @@ def initialize() {
             "access_token":state.accessToken
         ]
     ]
-    log.debug options
+    
     def myhubAction = new physicalgraph.device.HubAction(options, null, [callback: null])
     sendHubCommand(myhubAction)
     
@@ -202,7 +165,7 @@ def dataCallback(physicalgraph.device.HubResponse hubResponse) {
         status = msg.status
         json = msg.json
         log.debug "${json}"
-        state.latestHttpResponse = status
+    //    state.latestHttpResponse = status
     } catch (e) {
         logger('warn', "Exception caught while parsing data: "+e);
     }
@@ -251,6 +214,7 @@ def addDevice(){
 def updateDevice(){
     def id = params.id
     log.debug " ID >> " + id
+    log.debug params
     def dni = "gh-connector-" + id.toLowerCase()
     def chlid = getChildDevice(dni)
     if(chlid){
