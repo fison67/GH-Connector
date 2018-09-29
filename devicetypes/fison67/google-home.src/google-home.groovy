@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.1)
+ * Google Home (v.0.0.2)
  *
  * MIT License
  *
@@ -27,22 +27,26 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
  
+import org.apache.commons.codec.binary.Base64
 import groovy.json.JsonSlurper
 import java.util.concurrent.TimeUnit
+
 
 metadata {
 	definition (name: "Google Home", namespace: "fison67", author: "fison67") {
         capability "Actuator"
         capability "Audio Notification"
         capability "Music Player"
-        capability "Polling"
-        capability "Refresh"
         capability "Speech Synthesis"
-        capability "Switch"
                
         command "playText", ["string"]
         command "playText", ["string", "number"]
-        command "playMusic", ["string"]
+        command "playMp3", ["string"]
+        command "playMp3", ["string", "number"]
+        command "playTextTogether", ["string", "string"]
+        command "playTextTogether", ["string", "string", "number"]
+        command "playMp3Together", ["string", "string"]
+        command "playMp3Together", ["string", "string", "number"]
 	}
 
 	simulator {
@@ -56,8 +60,8 @@ metadata {
 	tiles {
 		multiAttributeTile(name: "mediaMulti", type:"mediaPlayer", width:6, height:4, canChangeIcon: true) {
             tileAttribute("device.status", key: "PRIMARY_CONTROL") {
-                attributeState("playing", label:"Playing", icon:"https://github.com/fison67/GH-Connector/blob/master/images/googleHome-off.png?raw=true", backgroundColor:"#00a0dc")
-                attributeState("Ready to cast", label:"Ready to cast", icon:"https://github.com/fison67/GH-Connector/blob/master/images/googleHome-off.png?raw=true")
+                attributeState("playing", label:"Playing",  backgroundColor:"#00a0dc")
+                attributeState("Ready to cast", label:"Ready to cast")
             }
             tileAttribute("device.status", key: "MEDIA_STATUS") {
                 attributeState("playing", label:"Playing", icon:"https://github.com/fison67/GH-Connector/blob/master/images/googleHome-off.png?raw=true", action:"music Player.stop", nextState: "stop", backgroundColor:"#00a0dc")
@@ -81,17 +85,12 @@ metadata {
             }
         }
         
-        valueTile("title", "device.title", width: 5, height: 1, decoration: "flat") {
+        valueTile("times", "device.times", width: 6, height: 2, decoration: "flat") {
             state "val", label:'${currentValue}', defaultState: true
         }
-        
-        valueTile("times", "device.times", width: 5, height: 1, decoration: "flat") {
-            state "val", label:'${currentValue}', defaultState: true
-        }
-        
         
         main "mediaMulti"
-        details(["mediaMulti", "title", "times"])
+        details(["mediaMulti", "times"])
 	}
 }
 
@@ -105,6 +104,13 @@ def setInfo(String appURL, String id, String targetAddress) {
 	state.appURL = appURL
     state.id = id
     state.targetAddress = targetAddress
+    
+    runIn(10000, initEvent)
+}
+
+def initEvent(){
+    sendEvent(name:"status", value: "Ready to cast", displayed:false )
+    sendEvent(name:"trackDescription", value: "Ready to cast", displayed:false )
 }
 
 def setExternalAddress(address){
@@ -130,8 +136,9 @@ def setStatus(params){
         	val = "playing"
         }else if(status == "IDLE"){
         	val = "Ready to cast"
-    		sendEvent(name:"times", value: "" )
-    		sendEvent(name:"title", value: "" )
+    		sendEvent(name:"times", value: "", displayed:false)
+    	//	sendEvent(name:"title", value: "" )
+    		sendEvent(name:"trackDescription", value: "Ready to cast", displayed:false )
         }
     	sendEvent(name:"status", value: val )
         
@@ -140,10 +147,10 @@ def setStatus(params){
         if(status == "PLAYING"){
             def time1 = formatSeconds(Double.valueOf(tmp[2] as Double).intValue())
             def time2 = formatSeconds(Double.valueOf(tmp[3] as Double).intValue())
-            sendEvent(name:"times", value: time1 + " / " + time2 )
+            sendEvent(name:"times", value: time1 + " / " + time2, displayed:false )
             
             // Title
-            sendEvent(name:"title", value: tmp[1] == "undefined" ? "" : tmp[1] )
+            sendEvent(name:"trackDescription", value: tmp[1] == "undefined" ? "" : tmp[1], displayed:false )
         }
     	break;
     }
@@ -175,6 +182,8 @@ def updated() {
     	makeCommand("tts", [getLanguage(), settings.tts, -1])
     }
     state.lastTTS = settings.tts
+    
+    
 }
 
 def setLanguage(lang){
@@ -207,6 +216,36 @@ def playText(text, level){
 def speak(text) {
 	log.debug "speak1 >> " + text
 	makeCommand("tts", [getLanguage(), text, -1])
+}
+
+def playMp3(String name){
+	log.debug "PlayTrack >> " + name.toString() + "(" + name.length() + ")"
+	makeCommand("playByName", [name, -1])
+}
+
+def playMp3(name, level){
+	log.debug "PlayTrack >> " + name + "(" + level + ")"
+	makeCommand("playByName", [name, level])
+}
+
+def playTextTogether(addresses, text){
+	log.debug "playTextTogether >> " + text
+	makeCommand2(addresses, "tts", [getLanguage(), text, -1])
+}
+
+def playTextTogether(addresses, text, level){
+	log.debug "playTextTogether >> " + text
+	makeCommand2(addresses, "tts", [getLanguage(), text, level as int])
+}
+
+def playMp3Together(addresses, name){
+	log.debug "playMp3Together >> " + name
+	makeCommand2(addresses, "playByName", [name, -1])
+}
+
+def playMp3Together(addresses, name, level){
+	log.debug "playMp3Together >> " + name
+	makeCommand2(addresses, "playByName", [name, level as int])
 }
 
 def playTrack(url){
@@ -266,6 +305,17 @@ def makeCommand(type, value){
     sendCommand(options, null)
 }
 
+def makeCommand2(addresses, type, value){
+    def body = [
+        "id": state.id,
+        "target": addresses,
+        "cmd": type,
+        "data": value
+    ]
+    log.debug body
+    def options = makeCommand(body)
+    sendCommand(options, null)
+}
 
 def sendCommand(options, _callback){
 	def myhubAction = new physicalgraph.device.HubAction(options, null, [callback: _callback])
@@ -278,7 +328,7 @@ def makeCommand(body){
         "path": "/googleHome/control",
         "headers": [
         	"HOST": state.appURL,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json;charset=utf-8"
         ],
         "body":body
     ]
@@ -309,4 +359,12 @@ def refresh(){
         ]
     ]
     sendCommand(options, callback)
+}
+
+/**
+* Base64 Encode a String using Apache commons
+*/
+def encodeAC(arg){
+    Base64 coder = new Base64()
+    return new String(coder.encodeBase64(arg.getBytes("utf-8"), false), "utf-8")
 }
