@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.2)
+ * Google Home (v.0.0.3)
  *
  * MIT License
  *
@@ -186,7 +186,7 @@ def updated() {
     
 }
 
-def setLanguage(lang){
+def setLanguage(language){
 	state.language = language
 }
 
