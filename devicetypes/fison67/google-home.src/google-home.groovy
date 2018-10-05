@@ -176,7 +176,7 @@ def callback(physicalgraph.device.HubResponse hubResponse){
 def updated() {
 	log.debug "TTS >> " + settings.tts
     
-    setLanguage(settings.selectedLang)
+    setLanguage(settings.language)
     
     if(state.lastTTS != settings.tts){
     	makeCommand("tts", [getLanguage(), settings.tts, -1])
