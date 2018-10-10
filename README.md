@@ -6,7 +6,7 @@ Connector for Google Home Devices with SmartThings
 # Install
 #### Preparing
 ```
-You need a Raspbery pi or Synology Nas to install GH Connector API Server
+You need a Raspbery pi or Synology Nas to install GH Connector API Server(Default port: 30010)
 ```
 <br/><br/>
 
@@ -53,7 +53,7 @@ c. volume
 d. speed
 
 ex) docker address(192.168.0.100), googleHome(192.168.0.200)
-http://192.168.0.100/googleHome/192.168.0.200/tts?messahe=test&lang=ko&volume=20
+http://192.168.0.100:30010/googleHome/192.168.0.200/tts?messahe=test&lang=ko&volume=20
 ```
 ```
 Play MP3
@@ -62,6 +62,6 @@ param
 a. volume
 
 ex) docker address(192.168.0.100), googleHome(192.168.0.200), mp3(test.mp3)
-http://192.168.0.100/googleHome/192.168.0.200/play/test&volume=20
+http://192.168.0.100:30010/googleHome/192.168.0.200/play/test&volume=20
 
 ```
