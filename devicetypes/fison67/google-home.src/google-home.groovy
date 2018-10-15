@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.3)
+ * Google Home (v.0.0.4)
  *
  * MIT License
  *
@@ -54,7 +54,7 @@ metadata {
     
     preferences {
         input name: "tts", title:"Type a text" , type: "string", required: false, defaultValue: "", description:"TTS"
-        input name: "language", title:"Select a language" , type: "enum", required: true, options: ["en", "ko"], defaultValue: "ko", description:""
+        input name: "ttsLanguage", title:"Select a TTS language" , type: "enum", required: true, options: ["en", "ko"], defaultValue: "ko", description:""
 	}
 
 	tiles {
@@ -176,22 +176,26 @@ def callback(physicalgraph.device.HubResponse hubResponse){
 def updated() {
 	log.debug "TTS >> " + settings.tts
     
-    setLanguage(settings.language)
+    setTTSLanguage(settings.ttsLanguage)
     
     if(state.lastTTS != settings.tts){
-    	makeCommand("tts", [getLanguage(), settings.tts, -1])
+    	makeCommand("tts", [getTTSLanguage(), settings.tts, -1])
     }
     state.lastTTS = settings.tts
     
     
 }
 
+def setTTSLanguage(language){
+	state.ttsLanguage = language
+}
+
 def setLanguage(language){
 	state.language = language
 }
 
-def getLanguage(){
-    def lang = state.language
+def getTTSLanguage(){
+    def lang = state.ttsLanguage
     if(lang == null){
     	lang = "ko"
     }
@@ -205,17 +209,17 @@ def stop(){
 
 def playText(text){
 	log.debug "speak3 >> " + text
-	makeCommand("tts", [getLanguage(), text, -1])
+	makeCommand("tts", [getTTSLanguage(), text, -1])
 }
 
 def playText(text, level){
 	log.debug "speak2 >> " + text
-	makeCommand("tts", [getLanguage(), text, level])
+	makeCommand("tts", [getTTSLanguage(), text, level])
 }
 
 def speak(text) {
 	log.debug "speak1 >> " + text
-	makeCommand("tts", [getLanguage(), text, -1])
+	makeCommand("tts", [getTTSLanguage(), text, -1])
 }
 
 def playMp3(String name){
@@ -230,12 +234,12 @@ def playMp3(name, level){
 
 def playTextTogether(addresses, text){
 	log.debug "playTextTogether >> " + text
-	makeCommand2(addresses, "tts", [getLanguage(), text, -1])
+	makeCommand2(addresses, "tts", [getTTSLanguage(), text, -1])
 }
 
 def playTextTogether(addresses, text, level){
 	log.debug "playTextTogether >> " + text
-	makeCommand2(addresses, "tts", [getLanguage(), text, level as int])
+	makeCommand2(addresses, "tts", [getTTSLanguage(), text, level as int])
 }
 
 def playMp3Together(addresses, name){
