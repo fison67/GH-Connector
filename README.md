@@ -41,3 +41,28 @@ Run Docker
 <br/><br/>
 
 ## Install Smartapps<br/>
+
+
+## API<br/>
+```
+TTS
+address : /googleHome/:googleHomeID/tts (GET, POST)
+param
+a. message
+b. lang
+c. volume
+d. speed
+
+ex) docker address(192.168.0.100), googleHomeID(xxxxxxxxxxxxxxx)
+http://192.168.0.100:30010/googleHome/xxxxxxxxxxxxxxx/tts?messahe=test&lang=ko&volume=20
+```
+```
+Play MP3
+address : /googleHome/:googleHomeID/play/:mp3Name (GET)
+param
+a. volume
+
+ex) docker address(192.168.0.100), googleHomeID(xxxxxxxxxxxxxxx), mp3(test.mp3)
+http://192.168.0.100:30010/googleHome/xxxxxxxxxxxxxxx/play/test&volume=20
+
+```
