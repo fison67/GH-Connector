@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.4)
+ * Google Home (v.0.0.5)
  *
  * MIT License
  *
@@ -105,10 +105,12 @@ def setInfo(String appURL, String id, String targetAddress) {
     state.id = id
     state.targetAddress = targetAddress
     
-    runIn(10000, initEvent)
+    initEvent()
+   // runIn(10000, initEvent)
 }
 
 def initEvent(){
+	log.debug "initEvent"
     sendEvent(name:"status", value: "Ready to cast", displayed:false )
     sendEvent(name:"trackDescription", value: "Ready to cast", displayed:false )
 }
