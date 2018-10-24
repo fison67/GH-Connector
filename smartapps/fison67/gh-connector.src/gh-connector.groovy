@@ -1,5 +1,5 @@
 /**
- *  GH Connector (v.0.0.2)
+ *  GH Connector (v.0.0.4)
  *
  * MIT License
  *
@@ -50,12 +50,10 @@ preferences {
 
 
 def mainPage() {
-	def languageList = ["English", "Korean"]
-    dynamicPage(name: "mainPage", title: "GH Connector", nextPage: null, uninstall: true, install: true) {
+	 dynamicPage(name: "mainPage", title: "GH Connector", nextPage: null, uninstall: true, install: true) {
    		section("Request New Devices"){
         	input "address", "string", title: "Server address", required: true
         	input "address2", "string", title: "Port forwarding Server address", required: false
-            input(name: "selectedLang", title:"Select a language" , type: "enum", required: true, options: languageList, defaultValue: "English", description:"Language for DTH")
         	href url:"http://${settings.address}", style:"embedded", required:false, title:"Local Management", description:"This makes you easy to setup"
         	href url:"http://${settings.address2}", style:"embedded", required:false, title:"External Management", description:"This makes you easy to setup"
         }
@@ -64,14 +62,6 @@ def mainPage() {
             paragraph "View this SmartApp's configuration to use it in other places."
             href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/config?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Config", description:"Tap, select, copy, then click \"Done\""
        	}
-    }
-}
-
-def langPage(){
-	dynamicPage(name: "langPage", title:"Select a Language") {
-    	section ("Select") {
-        	input "Korean",  title: "Korean", multiple: false, required: false
-        }
     }
 }
 
@@ -92,6 +82,8 @@ def updated() {
 //    unsubscribe()
     // Subscribe to stuff
     initialize()
+    initEvent()
+    setAPIAddress()
 }
 
 /**
@@ -110,6 +102,26 @@ def getDeviceToNotifyList(deviceNetworkID){
     return list
 }
 
+def setAPIAddress(){
+	def list = getChildDevices()
+    list.each { child ->
+        try{
+            child.setAddress(settings.address)
+        }catch(e){
+        }
+    }
+}
+
+def initEvent(){
+    def list = getChildDevices()
+    list.each { child ->
+        try{
+            child.initEvent()
+        }catch(e){
+        }
+    }
+}
+
 def updateLanguage(){
     log.debug "Languge >> ${settings.selectedLang}"
     def list = getChildDevices()
@@ -118,18 +130,6 @@ def updateLanguage(){
         	child.setLanguage(settings.selectedLang)
         }catch(e){
         	log.error "DTH is not supported to select language"
-        }
-    }
-}
-
-def updateExternalNetwork(){
-	log.debug "External Network >> ${settings.externalAddress}"
-    def list = getChildDevices()
-    list.each { child ->
-        try{
-        	child.setExternalAddress(settings.externalAddress)
-        }catch(e){
-        	log.error "DTH is not supported to select external address"
         }
     }
 }
@@ -154,8 +154,7 @@ def initialize() {
     def myhubAction = new physicalgraph.device.HubAction(options, null, [callback: null])
     sendHubCommand(myhubAction)
     
-    updateLanguage()
-    updateExternalNetwork()
+//    updateLanguage()
 }
 
 def dataCallback(physicalgraph.device.HubResponse hubResponse) {
@@ -182,6 +181,28 @@ def getDataList(){
     ]
     def myhubAction = new physicalgraph.device.HubAction(options, null, [callback: dataCallback])
     sendHubCommand(myhubAction)
+}
+
+def addVirtualDevice(){
+	log.debug "addVirtualDevice"
+	def id = params.id
+    def name = params.name
+    def list = params.list
+    
+    log.debug("Try >> ADD GoogleHome PlayList id=${id} name=${name}")
+	
+    def dni = "gh-connector-playlist-" + new Date().getTime(); 
+    def dth = "Google Home PlayList";
+
+    def childDevice = addChildDevice("fison67", dth, dni, location.hubs[0].id, [
+        "label": name
+    ])    
+    childDevice.setInfo(settings.address, id, list)
+    log.debug "Success >> ADD PlayList DNI=${dni} ${name}"
+
+    def resultString = new groovy.json.JsonOutput().toJson("result":"ok")
+    render contentType: "application/javascript", data: resultString
+
 }
 
 def addDevice(){
@@ -247,7 +268,6 @@ def deleteDevice(){
 }
 
 def getDeviceList(){
-	log.debug "getDeviceList"
 	def list = getChildDevices();
     def resultList = [];
     list.each { child ->
@@ -288,6 +308,7 @@ mappings {
         path("/list")                         	{ action: [GET: "authError"]  }
         path("/update")                         { action: [POST: "authError"]  }
         path("/add")                         	{ action: [POST: "authError"]  }
+        path("/addVirtual")                     { action: [POST: "authError"]  }
         path("/delete")                         { action: [POST: "authError"]  }
 
     } else {
@@ -295,6 +316,7 @@ mappings {
         path("/list")                         	{ action: [GET: "getDeviceList"]  }
         path("/update")                         { action: [POST: "updateDevice"]  }
         path("/add")                         	{ action: [POST: "addDevice"]  }
+        path("/addVirtual")                     { action: [POST: "addVirtualDevice"]  }
         path("/delete")                         { action: [POST: "deleteDevice"]  }
     }
 }
