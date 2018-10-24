@@ -83,11 +83,13 @@ def setAddress(String appURL){
 def on(){
     makeCommand( getDataList() )
     runIn(10, setRepeatMode)
+    sendEvent(name:"switch", value: "on", displayed:false )
 }
 
 def off(){
     makeCommand( getDataList() )
     runIn(10, setRepeatMode)
+    sendEvent(name:"switch", value: "off", displayed:false )
 }
 
 def setRepeatMode(){
