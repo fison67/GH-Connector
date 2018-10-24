@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.5)
+ * Google Home (v.0.0.6)
  *
  * MIT License
  *
@@ -38,6 +38,7 @@ metadata {
         capability "Audio Notification"
         capability "Music Player"
         capability "Speech Synthesis"
+        capability "Switch"
                
         command "playText", ["string"]
         command "playText", ["string", "number"]
@@ -53,8 +54,8 @@ metadata {
 	}
     
     preferences {
-        input name: "tts", title:"Type a text" , type: "string", required: false, defaultValue: "", description:"TTS"
-        input name: "ttsLanguage", title:"Select a TTS language" , type: "enum", required: true, options: ["en", "ko"], defaultValue: "ko", description:""
+        input name: "tts", title:"Type a tts contents" , type: "string", required: false, defaultValue: "", description:"TTS"
+        input name: "ttsLanguage", title:"Select a TTS language" , type: "enum", required: true, options: ["ko-KR", "en-US", "en-GB", "en-AU", "en-SG", "en-CA", "de-DE", "fr-FR", "fr-CA", "ja-JP", "es-ES", "pt-BR", "it-IT", "ru-RU", "hi-IN", "th-TH", "id-ID", "da-DK", "no-NO", "nl-NL", "sv-SE"], defaultValue: "ko-KR", description:""
 	}
 
 	tiles {
@@ -106,7 +107,10 @@ def setInfo(String appURL, String id, String targetAddress) {
     state.targetAddress = targetAddress
     
     initEvent()
-   // runIn(10000, initEvent)
+}
+
+def setAddress(String appURL){
+	state.appURL = appURL
 }
 
 def initEvent(){
@@ -120,8 +124,25 @@ def setExternalAddress(address){
 	state.externalAddress = address
 }
 
+def previousTrack(){
+	makeCommand("seek", 0)
+}
+
+def nextTrack(){
+	def time = state.totalTime as Integer
+	makeCommand("seek", time)
+}
+
+def on(){
+
+}
+
+def off(){
+	stop()
+}
+
 def setStatus(params){
-	log.debug "${params.key} : ${params.data}"
+//	log.debug "${params.key} : ${params.data}"
  	switch(params.key){
     case "volume":
     	def tmp = params.data.split("/")
@@ -149,6 +170,7 @@ def setStatus(params){
         if(status == "PLAYING"){
             def time1 = formatSeconds(Double.valueOf(tmp[2] as Double).intValue())
             def time2 = formatSeconds(Double.valueOf(tmp[3] as Double).intValue())
+            state.totalTime = Double.valueOf(tmp[3] as Double).intValue()
             sendEvent(name:"times", value: time1 + " / " + time2, displayed:false )
             
             // Title
@@ -199,7 +221,7 @@ def setLanguage(language){
 def getTTSLanguage(){
     def lang = state.ttsLanguage
     if(lang == null){
-    	lang = "ko"
+    	lang = "ko-KR"
     }
     return lang
 }
@@ -290,7 +312,6 @@ def updateLastTime(){
 }
 
 def setLevel(level) {
-	log.debug "setLevel >> " + level
     double lvl
     try { lvl = (double) level; } catch (e) {
         lvl = Double.parseDouble(level)
@@ -318,7 +339,6 @@ def makeCommand2(addresses, type, value){
         "cmd": type,
         "data": value
     ]
-    log.debug body
     def options = makeCommand(body)
     sendCommand(options, null)
 }
