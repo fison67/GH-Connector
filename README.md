@@ -9,7 +9,7 @@ Connector for Google Home Devices with SmartThings
 ### Web UI
 <br/><br/><br/><br/>
 
-# Example
+## Sample
 <img src="./images/sc-smartapp.PNG" title="Smart App" width="400px">
 <img src="./images/sc-dth.PNG" title="DTH" width="400px">
 <img src="./images/sc-dth2.PNG" title="DTH" width="400px">
