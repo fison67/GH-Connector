@@ -1,12 +1,13 @@
 # GH-Connector
 
 Connector for Google Home Devices with SmartThings
+<br/><br/><br/><br/>
 
 # Features
 ### Google Home TTS
 ### Music Player with File URL or MP3 File of NAS
 ### Web UI
-
+<br/><br/><br/><br/>
 
 # Example
 <img src="./images/sc-smartapp.PNG" title="Smart App" width="400px">
