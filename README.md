@@ -2,6 +2,25 @@
 
 Connector for Google Home Devices with SmartThings
 
+# Features
+### Google Home TTS
+### Music Player with File URL or MP3 File of NAS
+### Web UI
+
+
+# Example
+<img src="./images/sc-smartapp.PNG" title="Smart App" width="400px">
+<img src="./images/sc-dth.PNG" title="DTH" width="400px">
+<img src="./images/sc-dth2.PNG" title="DTH" width="400px">
+<img src="./images/sc-dashboard.PNG" title="Dashboard" width="400px">
+<img src="./images/sc-mp3-1.PNG" title="MP3" width="400px">
+<img src="./images/sc-mp3-3.PNG" title="MP3" width="400px">
+<img src="./images/sc-mp3-2.PNG" title="MP3" width="400px">
+<img src="./images/sc-lyrics.PNG" title="MP3" width="400px">
+<img src="./images/sc-tts.PNG" title="MP3" width="400px">
+<img src="./images/sc-setting2.PNG" title="Setting" width="400px">
+<img src="./images/sc-setting1.PNG" title="Setting" width="400px">
+
 
 # Install
 #### Preparing
@@ -17,8 +36,8 @@ You need a Raspbery pi or Synology Nas to install GH Connector API Server
 sudo mkdir /docker
 sudo mkdir /docker/gh-connector
 sudo chown -R pi:pi /docker
-docker pull fison67/gh-connector-rasp:0.0.1
-docker run -d --restart=always -v /docker/gh-connector:/config -v /yourMp3Folder:/music1 --name=gh-connector-rasp --net=host fison67/gh-connector-rasp:0.0.1
+docker pull fison67/gh-connector-rasp:beta
+docker run -d --restart=always -v /docker/gh-connector:/config -v /yourMp3Folder:/music1 --name=gh-connector-rasp --net=host fison67/gh-connector-rasp:beta
 ```
 
 ###### Synology nas<br/>
@@ -27,7 +46,7 @@ docker run -d --restart=always -v /docker/gh-connector:/config -v /yourMp3Folder
 make folder /docker/gh-connector
 Run Docker
 -> Registery 
--> Search fison67/gh-connector
+-> Search fison67/gh-connector (beta version)
 -> Advanced Settings
 -> Volume tab -> folder -> Select gh-connector & Mount path '/config'
 -> Volume tab -> folder -> Select MP3 Folder & Mount path '/music1'
@@ -37,10 +56,11 @@ Run Docker
 
 
 ## Install DTH<br/>
-
 <br/><br/>
 
 ## Install Smartapps<br/>
+You must enable OAuth.
+<br/><br/>
 
 
 ## API<br/>
