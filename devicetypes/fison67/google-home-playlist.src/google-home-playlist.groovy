@@ -34,7 +34,9 @@ import java.util.concurrent.TimeUnit
 
 metadata {
 	definition (name: "Google Home PlayList", namespace: "fison67", author: "fison67") {
-        capability "Switch"
+        capability "Actuator"
+		capability "Switch"
+        
 	}
 
 	simulator {
@@ -139,7 +141,7 @@ def _sendCommand(options, _callback){
 def _makeCommand(body, method){
 	def options = [
      	"method": "POST",
-        "path": "/googleHome/${state.id}/${method}",
+        "path": "/googleHome/api/${state.id}/${method}",
         "headers": [
         	"HOST": state.appURL,
             "Content-Type": "application/json;charset=utf-8"
