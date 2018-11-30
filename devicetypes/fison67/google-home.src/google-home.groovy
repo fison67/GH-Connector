@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.6)
+ * Google Home (v.0.0.7)
  *
  * MIT License
  *
@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit
 
 
 metadata {
-	definition (name: "Google Home", namespace: "fison67", author: "fison67") {
+	definition (name: "Google Home", namespace: "fison67", author: "fison67", mnmn:"SmartThings", vid: "generic-switch") {
         capability "Actuator"
         capability "Audio Notification"
         capability "Music Player"
@@ -351,7 +351,7 @@ def sendCommand(options, _callback){
 def makeCommand(body){
 	def options = [
      	"method": "POST",
-        "path": "/googleHome/control",
+        "path": "/googleHome/api/control",
         "headers": [
         	"HOST": state.appURL,
             "Content-Type": "application/json;charset=utf-8"
