@@ -139,7 +139,7 @@ def initialize() {
     
     def options = [
      	"method": "POST",
-        "path": "/settings/smartthings",
+        "path": "/settings/api/smartthings",
         "headers": [
         	"HOST": settings.address,
             "Content-Type": "application/json"
