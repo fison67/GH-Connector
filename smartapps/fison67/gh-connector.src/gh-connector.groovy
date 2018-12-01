@@ -1,5 +1,5 @@
 /**
- *  GH Connector (v.0.0.4)
+ *  GH Connector (v.0.0.5)
  *
  * MIT License
  *
