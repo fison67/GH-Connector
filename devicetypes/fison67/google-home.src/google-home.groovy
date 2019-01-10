@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.7)
+ * Google Home (v.0.0.8)
  *
  * MIT License
  *
@@ -44,10 +44,7 @@ metadata {
         command "playText", ["string", "number"]
         command "playMp3", ["string"]
         command "playMp3", ["string", "number"]
-        command "playTextTogether", ["string", "string"]
-        command "playTextTogether", ["string", "string", "number"]
-        command "playMp3Together", ["string", "string"]
-        command "playMp3Together", ["string", "string", "number"]
+        command "playTTS", ["string", "number", "string"]
 	}
 
 	simulator {
@@ -55,7 +52,9 @@ metadata {
     
     preferences {
         input name: "tts", title:"Type a tts contents" , type: "string", required: false, defaultValue: "", description:"TTS"
-        input name: "ttsLanguage", title:"Select a TTS language" , type: "enum", required: true, options: ["ko-KR", "en-US", "en-GB", "en-AU", "en-SG", "en-CA", "de-DE", "fr-FR", "fr-CA", "ja-JP", "es-ES", "pt-BR", "it-IT", "ru-RU", "hi-IN", "th-TH", "id-ID", "da-DK", "no-NO", "nl-NL", "sv-SE"], defaultValue: "ko-KR", description:""
+        input name: "ttsType", title:"Select a TTS Type" , type: "enum", required: true, options: ["google", "oddcast"], defaultValue: "google", description:""
+        input name: "ttsPerson", title:"[ ODDCAST ] Select a Person" , type: "enum", required: true, options: ["dayoung", "hyeryun", "hyuna", "jihun", "jimin", "junwoo", "narae", "sena", "yumi", "yura"], defaultValue: "dayoung", description:""
+        input name: "ttsLanguage", title:"[ GOOGLE ] Select a TTS language" , type: "enum", required: true, options: ["ko-KR", "en-US", "en-GB", "en-AU", "en-SG", "en-CA", "de-DE", "fr-FR", "fr-CA", "ja-JP", "es-ES", "pt-BR", "it-IT", "ru-RU", "hi-IN", "th-TH", "id-ID", "da-DK", "no-NO", "nl-NL", "sv-SE"], defaultValue: "ko-KR", description:""
 	}
 
 	tiles {
@@ -203,11 +202,14 @@ def updated() {
     setTTSLanguage(settings.ttsLanguage)
     
     if(state.lastTTS != settings.tts){
-    	makeCommand("tts", [getTTSLanguage(), settings.tts, -1])
+    	log.debug "ttsType >> " + ttsType
+    	if(ttsType == "google"){
+    		makeCommand("tts", [getTTSLanguage(), settings.tts, -1, ttsType])
+        }else if(ttsType == "oddcast"){
+    		makeCommand("tts", [settings.tts, ttsPerson, -1, ttsType])
+        }
     }
     state.lastTTS = settings.tts
-    
-    
 }
 
 def setTTSLanguage(language){
@@ -241,8 +243,13 @@ def playText(text, level){
 	makeCommand("tts", [getTTSLanguage(), text, level])
 }
 
+def playTTS(text, level, person){
+	log.debug "playTTS >> ${text}, Level >> ${level}, Person=${person}"
+    makeCommand("tts", [text, person, level, "oddcast"])
+}
+
 def speak(text) {
-	log.debug "speak1 >> " + text
+	log.debug "Speak >> ${text}"
 	makeCommand("tts", [getTTSLanguage(), text, -1])
 }
 
@@ -255,7 +262,7 @@ def playMp3(name, level){
 	log.debug "PlayTrack >> " + name + "(" + level + ")"
 	makeCommand("playByName", [name, level])
 }
-
+/*
 def playTextTogether(addresses, text){
 	log.debug "playTextTogether >> " + text
 	makeCommand2(addresses, "tts", [getTTSLanguage(), text, -1])
@@ -275,7 +282,7 @@ def playMp3Together(addresses, name, level){
 	log.debug "playMp3Together >> " + name
 	makeCommand2(addresses, "playByName", [name, level as int])
 }
-
+*/
 def playTrack(url){
 	log.debug "PlayTrack >> " + url + "(" + ")"
 	makeCommand("playURL", [url, -1])
@@ -358,7 +365,6 @@ def makeCommand(body){
         ],
         "body":body
     ]
-    log.debug options
     return options
 }
 
