@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.8)
+ * Google Home (v.0.0.9)
  *
  * MIT License
  *
@@ -45,6 +45,7 @@ metadata {
         command "playMp3", ["string"]
         command "playMp3", ["string", "number"]
         command "playTTS", ["string", "number", "string"]
+        command "playNaverTTS", ["string", "number", "string", "number"]
 	}
 
 	simulator {
@@ -52,9 +53,10 @@ metadata {
     
     preferences {
         input name: "tts", title:"Type a tts contents" , type: "string", required: false, defaultValue: "", description:"TTS"
-        input name: "ttsType", title:"Select a TTS Type" , type: "enum", required: true, options: ["google", "oddcast"], defaultValue: "google", description:""
+        input name: "ttsType", title:"Select a TTS Type" , type: "enum", required: true, options: ["google", "oddcast", "naver"], defaultValue: "google", description:""
         input name: "ttsPerson", title:"[ ODDCAST ] Select a Person" , type: "enum", required: true, options: ["dayoung", "hyeryun", "hyuna", "jihun", "jimin", "junwoo", "narae", "sena", "yumi", "yura"], defaultValue: "dayoung", description:""
         input name: "ttsLanguage", title:"[ GOOGLE ] Select a TTS language" , type: "enum", required: true, options: ["ko-KR", "en-US", "en-GB", "en-AU", "en-SG", "en-CA", "de-DE", "fr-FR", "fr-CA", "ja-JP", "es-ES", "pt-BR", "it-IT", "ru-RU", "hi-IN", "th-TH", "id-ID", "da-DK", "no-NO", "nl-NL", "sv-SE"], defaultValue: "ko-KR", description:""
+		input name: "ttsNPerson", title:"[ NAVER ] Select a Person" , type: "enum", required: true, options: ["kyuri", "jinho", "mijin"], defaultValue: "kyuri", description:""
 	}
 
 	tiles {
@@ -207,6 +209,8 @@ def updated() {
     		makeCommand("tts", [getTTSLanguage(), settings.tts, -1, ttsType])
         }else if(ttsType == "oddcast"){
     		makeCommand("tts", [settings.tts, ttsPerson, -1, ttsType])
+        }else if(ttsType == "naver"){
+    		makeCommand("tts", [settings.tts, ttsNPerson, 0, ttsType, -1])
         }
     }
     state.lastTTS = settings.tts
@@ -246,6 +250,11 @@ def playText(text, level){
 def playTTS(text, level, person){
 	log.debug "playTTS >> ${text}, Level >> ${level}, Person=${person}"
     makeCommand("tts", [text, person, level, "oddcast"])
+}
+
+def playNaverTTS(text, level, person, speed){
+	log.debug "playNaverTTS >> ${text}, Level >> ${level}, Person=${person}, Speed=${speed}"
+    makeCommand("tts", [text, person, 0, "naver", level])
 }
 
 def speak(text) {
