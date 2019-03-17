@@ -1,5 +1,5 @@
 /**
- *  GH Connector (v.0.0.5)
+ *  GH Connector (v.0.0.6)
  *
  * MIT License
  *
@@ -206,40 +206,56 @@ def addVirtualDevice(){
 }
 
 def addDevice(){
-	def id = params.id
-    def targetAddress = params.address
-    def googleHomeName = params.name
-    
-    log.debug("Try >> ADD GoogleHome Device id=${id} name=${googleHomeName}")
-	
-    def dni = "gh-connector-" + id.toLowerCase()
-    log.debug("DNI >> " + dni)
-    def chlid = getChildDevice(dni)
-    if(!child){
-        def dth = "Google Home";
-        def name = id;
-        
-        def childDevice = addChildDevice("fison67", dth, dni, location.hubs[0].id, [
-            "label": googleHomeName
-        ])    
-        childDevice.setInfo(settings.address, id, targetAddress)
-        log.debug "Success >> ADD Device DNI=${dni} ${googleHomeName}"
+    def data = request.JSON
+    log.debug _data
+	def id = data.id
+    if(id.contains("calendar-")){
+    	log.debug("Try >> ADD Calendar id=${id} name=${googleName}")
+        def dni = "gh-connector-" + id.toLowerCase()
+        def chlid = getChildDevice(dni)
+        if(!child){
+            def dth = "Google Calendar";
+            def childDevice = addChildDevice("fison67", dth, dni, location.hubs[0].id, [
+                "label": data.name_ko
+            ])    
+            log.debug "Success >> ADD Device DNI=${dni} ${data.name_ko}"
 
-        try{ childDevice.setLanguage(settings.selectedLang) }catch(e){}
+            def resultString = new groovy.json.JsonOutput().toJson("result":"ok")
+            render contentType: "application/javascript", data: resultString
+        }
+    }else{
+        def targetAddress = data.address
+        def googleName = data.name
+        log.debug("Try >> ADD GoogleHome Device id=${id} name=${googleName}")
+        def dni = "gh-connector-" + id.toLowerCase()
+        def chlid = getChildDevice(dni)
+        if(!child){
+            def dth = "Google Home";
+            def name = id;
 
-        def resultString = new groovy.json.JsonOutput().toJson("result":"ok")
-        render contentType: "application/javascript", data: resultString
+            def childDevice = addChildDevice("fison67", dth, dni, location.hubs[0].id, [
+                "label": googleName
+            ])    
+            childDevice.setInfo(settings.address, id, targetAddress)
+            log.debug "Success >> ADD Device DNI=${dni} ${googleName}"
+
+            try{ childDevice.setLanguage(settings.selectedLang) }catch(e){}
+
+            def resultString = new groovy.json.JsonOutput().toJson("result":"ok")
+            render contentType: "application/javascript", data: resultString
+        }
     }
+    
+    
 }
 
 def updateDevice(){
-    def id = params.id
-    log.debug " ID >> " + id
-    log.debug params
+    def data = request.JSON
+    def id = data.id
     def dni = "gh-connector-" + id.toLowerCase()
     def chlid = getChildDevice(dni)
     if(chlid){
-		chlid.setStatus(params)
+        chlid.setStatus(data)
     }
     def resultString = new groovy.json.JsonOutput().toJson("result":true)
     render contentType: "application/javascript", data: resultString
@@ -284,6 +300,11 @@ def authError() {
     [error: "Permission denied"]
 }
 
+def auth(){
+    def configString = new groovy.json.JsonOutput().toJson("list":{})
+    render contentType: "application/javascript", data: configString
+}
+
 def renderConfig() {
     def configJson = new groovy.json.JsonOutput().toJson([
         description: "GH Connector API",
@@ -293,7 +314,11 @@ def renderConfig() {
                 name: "GH Connector",
                 app_url: apiServerUrl("/api/smartapps/installations/"),
                 app_id: app.id,
-                access_token:  state.accessToken
+                access_token:  state.accessToken,
+                calendar: [
+                	authorized_javaScript_origins: apiServerUrl(""),
+                    authorized_redirect_uris: apiServerUrl("/api/smartapps/installations/") + app.id + "/auth"
+                ]
             ]
         ],
     ])
@@ -310,6 +335,7 @@ mappings {
         path("/add")                         	{ action: [POST: "authError"]  }
         path("/addVirtual")                     { action: [POST: "authError"]  }
         path("/delete")                         { action: [POST: "authError"]  }
+        path("/auth")                         	{ action: [GET: "auth"]  }
 
     } else {
         path("/config")                         { action: [GET: "renderConfig"]  }
@@ -318,5 +344,6 @@ mappings {
         path("/add")                         	{ action: [POST: "addDevice"]  }
         path("/addVirtual")                     { action: [POST: "addVirtualDevice"]  }
         path("/delete")                         { action: [POST: "deleteDevice"]  }
+        path("/auth")                         	{ action: [GET: "auth"]  }
     }
 }
