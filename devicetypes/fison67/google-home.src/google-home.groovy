@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.1)
+ * Google Home (v.0.0.9)
  *
  * MIT License
  *
@@ -27,72 +27,37 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
  
+import org.apache.commons.codec.binary.Base64
 import groovy.json.JsonSlurper
-import java.util.concurrent.TimeUnit
+
 
 metadata {
 	definition (name: "Google Home", namespace: "fison67", author: "fison67") {
         capability "Actuator"
         capability "Audio Notification"
         capability "Music Player"
-        capability "Polling"
-        capability "Refresh"
         capability "Speech Synthesis"
         capability "Switch"
                
         command "playText", ["string"]
         command "playText", ["string", "number"]
-        command "playMusic", ["string"]
+        command "playMp3", ["string"]
+        command "playMp3", ["string", "number"]
+        command "playTTS", ["string", "number", "string"]
+        command "playNaverTTS", ["string", "number", "string", "number"]
 	}
 
 	simulator {
 	}
     
     preferences {
-        input name: "tts", title:"Type a text" , type: "string", required: false, defaultValue: "", description:"TTS"
-        input name: "language", title:"Select a language" , type: "enum", required: true, options: ["en", "ko"], defaultValue: "ko", description:""
+        input name: "tts", title:"Type a tts contents" , type: "string", required: false, defaultValue: "", description:"TTS"
+        input name: "ttsType", title:"Select a TTS Type" , type: "enum", required: true, options: ["google", "oddcast", "naver"], defaultValue: "google", description:""
+        input name: "ttsPerson", title:"[ ODDCAST ] Select a Person" , type: "enum", required: true, options: ["dayoung", "hyeryun", "hyuna", "jihun", "jimin", "junwoo", "narae", "sena", "yumi", "yura"], defaultValue: "dayoung", description:""
+        input name: "ttsLanguage", title:"[ GOOGLE ] Select a TTS language" , type: "enum", required: true, options: ["ko-KR", "en-US", "en-GB", "en-AU", "en-SG", "en-CA", "de-DE", "fr-FR", "fr-CA", "ja-JP", "es-ES", "pt-BR", "it-IT", "ru-RU", "hi-IN", "th-TH", "id-ID", "da-DK", "no-NO", "nl-NL", "sv-SE"], defaultValue: "ko-KR", description:""
+		input name: "ttsNPerson", title:"[ NAVER ] Select a Person" , type: "enum", required: true, options: ["kyuri", "jinho", "mijin"], defaultValue: "kyuri", description:""
 	}
 
-	tiles {
-		multiAttributeTile(name: "mediaMulti", type:"mediaPlayer", width:6, height:4, canChangeIcon: true) {
-            tileAttribute("device.status", key: "PRIMARY_CONTROL") {
-                attributeState("playing", label:"Playing", icon:"https://github.com/fison67/GH-Connector/blob/master/images/googleHome-off.png?raw=true", backgroundColor:"#00a0dc")
-                attributeState("Ready to cast", label:"Ready to cast", icon:"https://github.com/fison67/GH-Connector/blob/master/images/googleHome-off.png?raw=true")
-            }
-            tileAttribute("device.status", key: "MEDIA_STATUS") {
-                attributeState("playing", label:"Playing", icon:"https://github.com/fison67/GH-Connector/blob/master/images/googleHome-off.png?raw=true", action:"music Player.stop", nextState: "stop", backgroundColor:"#00a0dc")
-                attributeState("Ready to cast", label:"Ready to cast", action:"", nextState: "Ready to cast", icon:"https://github.com/fison67/GH-Connector/blob/master/images/googleHome-off.png?raw=true")
-            }
-            tileAttribute("device.status", key: "PREVIOUS_TRACK") {
-                attributeState("status", action:"music Player.previousTrack", defaultState: true)
-            }
-            tileAttribute("device.status", key: "NEXT_TRACK") {
-                attributeState("status", action:"music Player.nextTrack", defaultState: true)
-            }
-            tileAttribute ("device.level", key: "SLIDER_CONTROL", icon: "st.custom.sonos.unmuted") {
-                attributeState("level", action:"music Player.setLevel", icon: "st.custom.sonos.unmuted")
-            }
-            tileAttribute ("device.mute", key: "MEDIA_MUTED") {
-                attributeState("unmuted", action:"music Player.mute", nextState: "muted", icon: "st.custom.sonos.unmuted")
-                attributeState("muted", action:"music Player.unmute", nextState: "unmuted", icon: "st.custom.sonos.muted")
-            }
-            tileAttribute("device.trackDescription", key: "MARQUEE") {
-                attributeState("trackDescription", label:"${currentValue}", defaultState: true)
-            }
-        }
-        
-        valueTile("title", "device.title", width: 5, height: 1, decoration: "flat") {
-            state "val", label:'${currentValue}', defaultState: true
-        }
-        
-        valueTile("times", "device.times", width: 5, height: 1, decoration: "flat") {
-            state "val", label:'${currentValue}', defaultState: true
-        }
-        
-        
-        main "mediaMulti"
-        details(["mediaMulti", "title", "times"])
-	}
 }
 
 // parse events into attributes
@@ -105,6 +70,18 @@ def setInfo(String appURL, String id, String targetAddress) {
 	state.appURL = appURL
     state.id = id
     state.targetAddress = targetAddress
+    
+    initEvent()
+}
+
+def setAddress(String appURL){
+	state.appURL = appURL
+}
+
+def initEvent(){
+	log.debug "initEvent"
+    sendEvent(name:"status", value: "Ready to cast", displayed:false )
+    sendEvent(name:"trackDescription", value: "Ready to cast", displayed:false )
 }
 
 def setExternalAddress(address){
@@ -112,8 +89,26 @@ def setExternalAddress(address){
 	state.externalAddress = address
 }
 
+def previousTrack(){
+	makeCommand("seek", 0)
+}
+
+def nextTrack(){
+	def time = state.totalTime as Integer
+	makeCommand("seek", time)
+}
+
+def on(){
+
+}
+
+def off(){
+	stop()
+}
+
 def setStatus(params){
-	log.debug "${params.key} : ${params.data}"
+//	log.debug "${params.key} : ${params.data}"
+	log.debug params
  	switch(params.key){
     case "volume":
     	def tmp = params.data.split("/")
@@ -130,8 +125,9 @@ def setStatus(params){
         	val = "playing"
         }else if(status == "IDLE"){
         	val = "Ready to cast"
-    		sendEvent(name:"times", value: "" )
-    		sendEvent(name:"title", value: "" )
+    		sendEvent(name:"times", value: "", displayed:false)
+    	//	sendEvent(name:"title", value: "" )
+    		sendEvent(name:"trackDescription", value: "Ready to cast", displayed:false )
         }
     	sendEvent(name:"status", value: val )
         
@@ -140,17 +136,18 @@ def setStatus(params){
         if(status == "PLAYING"){
             def time1 = formatSeconds(Double.valueOf(tmp[2] as Double).intValue())
             def time2 = formatSeconds(Double.valueOf(tmp[3] as Double).intValue())
-            sendEvent(name:"times", value: time1 + " / " + time2 )
+            state.totalTime = Double.valueOf(tmp[3] as Double).intValue()
+            sendEvent(name:"times", value: time1 + " / " + time2, displayed:false )
             
             // Title
-            sendEvent(name:"title", value: tmp[1] == "undefined" ? "" : tmp[1] )
+            sendEvent(name:"trackDescription", value: tmp[1] == "undefined" ? "" : tmp[1], displayed:false )
         }
     	break;
     }
 //    updateLastTime()
 }
 
-def callback(physicalgraph.device.HubResponse hubResponse){
+def callback(hubitat.device.HubResponse hubResponse){
 	def msg
     try {
         msg = parseLanMessage(hubResponse.description)
@@ -169,22 +166,33 @@ def callback(physicalgraph.device.HubResponse hubResponse){
 def updated() {
 	log.debug "TTS >> " + settings.tts
     
-    setLanguage(settings.selectedLang)
+    setTTSLanguage(settings.ttsLanguage)
     
     if(state.lastTTS != settings.tts){
-    	makeCommand("tts", [getLanguage(), settings.tts, -1])
+    	log.debug "ttsType >> " + ttsType
+    	if(ttsType == "google"){
+    		makeCommand("tts", [getTTSLanguage(), settings.tts, -1, ttsType])
+        }else if(ttsType == "oddcast"){
+    		makeCommand("tts", [settings.tts, ttsPerson, -1, ttsType])
+        }else if(ttsType == "naver"){
+    		makeCommand("tts", [settings.tts, ttsNPerson, 0, ttsType, -1])
+        }
     }
     state.lastTTS = settings.tts
 }
 
-def setLanguage(lang){
+def setTTSLanguage(language){
+	state.ttsLanguage = language
+}
+
+def setLanguage(language){
 	state.language = language
 }
 
-def getLanguage(){
-    def lang = state.language
+def getTTSLanguage(){
+    def lang = state.ttsLanguage
     if(lang == null){
-    	lang = "ko"
+    	lang = "ko-KR"
     }
     return lang
 }
@@ -196,19 +204,59 @@ def stop(){
 
 def playText(text){
 	log.debug "speak3 >> " + text
-	makeCommand("tts", [getLanguage(), text, -1])
+	makeCommand("tts", [getTTSLanguage(), text, -1])
 }
 
 def playText(text, level){
 	log.debug "speak2 >> " + text
-	makeCommand("tts", [getLanguage(), text, level])
+	makeCommand("tts", [getTTSLanguage(), text, level])
+}
+
+def playTTS(text, level, person){
+	log.debug "playTTS >> ${text}, Level >> ${level}, Person=${person}"
+    makeCommand("tts", [text, person, level, "oddcast"])
+}
+
+def playNaverTTS(text, level, person, speed){
+	log.debug "playNaverTTS >> ${text}, Level >> ${level}, Person=${person}, Speed=${speed}"
+    makeCommand("tts", [text, person, 0, "naver", level])
 }
 
 def speak(text) {
-	log.debug "speak1 >> " + text
-	makeCommand("tts", [getLanguage(), text, -1])
+	log.debug "Speak >> ${text}"
+	makeCommand("tts", [getTTSLanguage(), text, -1])
 }
 
+def playMp3(String name){
+	log.debug "PlayTrack >> " + name.toString() + "(" + name.length() + ")"
+	makeCommand("playByName", [name, -1])
+}
+
+def playMp3(name, level){
+	log.debug "PlayTrack >> " + name + "(" + level + ")"
+	makeCommand("playByName", [name, level])
+}
+/*
+def playTextTogether(addresses, text){
+	log.debug "playTextTogether >> " + text
+	makeCommand2(addresses, "tts", [getTTSLanguage(), text, -1])
+}
+
+def playTextTogether(addresses, text, level){
+	log.debug "playTextTogether >> " + text
+	makeCommand2(addresses, "tts", [getTTSLanguage(), text, level as int])
+}
+
+def playMp3Together(addresses, name){
+	log.debug "playMp3Together >> " + name
+	makeCommand2(addresses, "playByName", [name, -1])
+}
+
+def playMp3Together(addresses, name, level){
+	log.debug "playMp3Together >> " + name
+	makeCommand2(addresses, "playByName", [name, level as int])
+}
+*/
 def playTrack(url){
 	log.debug "PlayTrack >> " + url + "(" + ")"
 	makeCommand("playURL", [url, -1])
@@ -223,6 +271,18 @@ def playTrack(url, level){
 
 def playTrackAndResume(url, level){
 	log.debug "playTrackAndResume >> " + url
+    if(level == 0){
+    	level = -1
+    }
+	makeCommand("playURL", [url, level])
+    sendEvent(name:"level", value: level )
+}
+
+def playTrackAndResume(url, duration, level){
+	log.debug "playTrackAndResume >> " + url
+    if(level == 0){
+    	level = -1
+    }
 	makeCommand("playURL", [url, level])
     sendEvent(name:"level", value: level )
 }
@@ -245,7 +305,6 @@ def updateLastTime(){
 }
 
 def setLevel(level) {
-	log.debug "setLevel >> " + level
     double lvl
     try { lvl = (double) level; } catch (e) {
         lvl = Double.parseDouble(level)
@@ -266,23 +325,32 @@ def makeCommand(type, value){
     sendCommand(options, null)
 }
 
+def makeCommand2(addresses, type, value){
+    def body = [
+        "id": state.id,
+        "target": addresses,
+        "cmd": type,
+        "data": value
+    ]
+    def options = makeCommand(body)
+    sendCommand(options, null)
+}
 
 def sendCommand(options, _callback){
-	def myhubAction = new physicalgraph.device.HubAction(options, null, [callback: _callback])
+	def myhubAction = new hubitat.device.HubAction(options, null, [callback: _callback])
     sendHubCommand(myhubAction)
 }
 
 def makeCommand(body){
 	def options = [
      	"method": "POST",
-        "path": "/googleHome/control",
+        "path": "/googleHome/api/control",
         "headers": [
         	"HOST": state.appURL,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json;charset=utf-8"
         ],
         "body":body
     ]
-    log.debug options
     return options
 }
 
@@ -309,4 +377,12 @@ def refresh(){
         ]
     ]
     sendCommand(options, callback)
+}
+
+/**
+* Base64 Encode a String using Apache commons
+*/
+def encodeAC(arg){
+    Base64 coder = new Base64()
+    return new String(coder.encodeBase64(arg.getBytes("utf-8"), false), "utf-8")
 }
