@@ -1,5 +1,5 @@
 /**
- *  GH Connector (v.0.0.6)
+ *  GH Connector (v.0.0.7)
  *
  * MIT License
  *
@@ -185,10 +185,10 @@ def getDataList(){
 }
 
 def addVirtualDevice(){
-	log.debug "addVirtualDevice"
-	def id = params.id
-    def name = params.name
-    def list = params.list
+    def data = request.JSON
+	def id = data.id
+    def name = data.name
+    def list = data.list
     
     log.debug("Try >> ADD GoogleHome PlayList id=${id} name=${name}")
 	
