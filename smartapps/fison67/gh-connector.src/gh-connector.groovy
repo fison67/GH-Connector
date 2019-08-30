@@ -1,5 +1,5 @@
 /**
- *  GH Connector (v.0.0.7)
+ *  GH Connector (v.0.0.8)
  *
  * MIT License
  *
@@ -208,12 +208,12 @@ def addVirtualDevice(){
 
 def addDevice(){
     def data = request.JSON
-    log.debug _data
+    log.debug data
 	def id = data.id
     if(id.contains("calendar-")){
     	log.debug("Try >> ADD Calendar id=${id} name=${googleName}")
         def dni = "gh-connector-" + id.toLowerCase()
-        def chlid = getChildDevice(dni)
+		def child = childDevices.find { it.deviceNetworkId == dni }
         if(!child){
             def dth = "Google Calendar";
             def childDevice = addChildDevice("fison67", dth, dni, location.hubs[0].id, [
@@ -223,13 +223,38 @@ def addDevice(){
 
             def resultString = new groovy.json.JsonOutput().toJson("result":"ok")
             render contentType: "application/javascript", data: resultString
+        }else{
+            def resultString = new groovy.json.JsonOutput().toJson("result":"exist")
+            render contentType: "application/javascript", data: resultString
         }
+        
+    }else if(id.contains("assistant-")){
+    	log.debug "Add Assistant"
+        def dni = "gh-connector-" + id.toLowerCase()
+        log.debug "DNI >> " + dni
+		def child = childDevices.find { it.deviceNetworkId == dni }
+        log.debug child
+        if(!child){
+            def dth = "Google Assistant";
+            def childDevice = addChildDevice("fison67", dth, dni, location.hubs[0].id, [
+                "label": "Google Assistant " + data.name
+            ])    
+            childDevice.setInfo(settings.address, id, data.address)
+            log.debug "Success >> ADD Device DNI=${dni} ${data.name}"
+
+            def resultString = new groovy.json.JsonOutput().toJson("result":"ok")
+            render contentType: "application/javascript", data: resultString
+        }else{
+            def resultString = new groovy.json.JsonOutput().toJson("result":"exist")
+            render contentType: "application/javascript", data: resultString
+        }
+        
     }else{
         def targetAddress = data.address
         def googleName = data.name
         log.debug("Try >> ADD GoogleHome Device id=${id} name=${googleName}")
         def dni = "gh-connector-" + id.toLowerCase()
-        def chlid = getChildDevice(dni)
+		def child = childDevices.find { it.deviceNetworkId == dni }
         if(!child){
             def dth = "Google Home";
             def name = id;
@@ -243,6 +268,9 @@ def addDevice(){
             try{ childDevice.setLanguage(settings.selectedLang) }catch(e){}
 
             def resultString = new groovy.json.JsonOutput().toJson("result":"ok")
+            render contentType: "application/javascript", data: resultString
+        }else{
+            def resultString = new groovy.json.JsonOutput().toJson("result":"exist")
             render contentType: "application/javascript", data: resultString
         }
     }
