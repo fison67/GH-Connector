@@ -47,7 +47,7 @@ metadata {
 	tiles {
 		multiAttributeTile(name:"status", type: "generic", width: 6, height: 4){
 			tileAttribute ("device.status", key: "PRIMARY_CONTROL") {
-				attributeState("status", label:'${currentValue}', backgroundColor: "#ffffff", icon: "https://cdn4.iconfinder.com/data/icons/small-n-flat/24/calendar-128.png")
+				attributeState("status", label:'${currentValue}', backgroundColor: "#ffffff", icon: "https://github.com/fison67/GH-Connector/blob/master/images/google-assistant.png?raw=true")
 			}
             tileAttribute("device.lastCheckin", key: "SECONDARY_CONTROL") {
     			attributeState("default", label:'Last Update: ${currentValue}',icon: "st.Health & Wellness.health9")
