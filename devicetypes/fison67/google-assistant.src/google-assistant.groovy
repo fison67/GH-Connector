@@ -1,5 +1,5 @@
 /**
- *  Google Assistant (v.0.0.1)
+ *  Google Assistant (v.0.0.2)
  *
  * MIT License
  *
@@ -37,8 +37,8 @@ metadata {
         capability "Actuator"
 	}
 
-	preferences {
-    
+    preferences {
+        input name: "voice", title:"Select a Voice", type: "enum", required: true, options: ["google_ko-KR", "naver_kyuri", "naver_jinho", "naver_mijin", "oddcast_dayoung", "oddcast_hyeryun", "oddcast_hyuna", "oddcast_jihun", "oddcast_jimin", "oddcast_junwoo", "oddcast_narae", "oddcast_sena", "oddcast_yumi", "oddcast_yura" ], defaultValue: "naver-kyuri"
 	}
     
 	simulator {
@@ -80,21 +80,47 @@ def speak(text){
         	"HOST": state.appURL,
             "Content-Type": "application/json"
         ],
-        "body": makeMessage("google", ["text": text])
+        "body": makeMessage(voice, ["text": text])
     ]
     sendCommand(options)
 }
 
-def makeMessage(type, data){
+def makeMessage(_voice, data){
 	def result
+    def tmp = voice.split("_")
+    def type = tmp[0]
+    def voice = tmp[1]
     switch(type){
     case "google":
     	result = [
         	data:[
                 "message": data.text,
                 "volume": 0,
-                "type": "google",
-                "language": "ko"
+                "type": type,
+                "language": voice
+            ],
+            deviceId: state.id.substring(10, state.id.length())
+        ]
+    	break
+    case "naver":
+    	result = [
+        	data:[
+                "message": data.text,
+                "volume": 0,
+                "type": type,
+                "person": voice,
+                "speed": 1
+            ],
+            deviceId: state.id.substring(10, state.id.length())
+        ]
+    	break
+	case "oddcast":
+    	result = [
+        	data:[
+                "message": data.text,
+                "volume": 0,
+                "type": type,
+                "person": voice
             ],
             deviceId: state.id.substring(10, state.id.length())
         ]
