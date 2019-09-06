@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.9)
+ * Google Home (v.0.0.10)
  *
  * MIT License
  *
@@ -45,6 +45,7 @@ metadata {
         command "playMp3", ["string", "number"]
         command "playTTS", ["string", "number", "string"]
         command "playNaverTTS", ["string", "number", "string", "number"]
+        command "playGoogleTTS", ["string", "number", "string"]
 	}
 
 	simulator {
@@ -52,10 +53,11 @@ metadata {
     
     preferences {
         input name: "tts", title:"Type a tts contents" , type: "string", required: false, defaultValue: "", description:"TTS"
-        input name: "ttsType", title:"Select a TTS Type" , type: "enum", required: true, options: ["google", "oddcast", "naver"], defaultValue: "google", description:""
+        input name: "ttsType", title:"Select a TTS Type" , type: "enum", required: true, options: ["google", "oddcast", "naver", "googleTTS"], defaultValue: "google", description:""
         input name: "ttsPerson", title:"[ ODDCAST ] Select a Person" , type: "enum", required: true, options: ["dayoung", "hyeryun", "hyuna", "jihun", "jimin", "junwoo", "narae", "sena", "yumi", "yura"], defaultValue: "dayoung", description:""
         input name: "ttsLanguage", title:"[ GOOGLE ] Select a TTS language" , type: "enum", required: true, options: ["ko-KR", "en-US", "en-GB", "en-AU", "en-SG", "en-CA", "de-DE", "fr-FR", "fr-CA", "ja-JP", "es-ES", "pt-BR", "it-IT", "ru-RU", "hi-IN", "th-TH", "id-ID", "da-DK", "no-NO", "nl-NL", "sv-SE"], defaultValue: "ko-KR", description:""
 		input name: "ttsNPerson", title:"[ NAVER ] Select a Person" , type: "enum", required: true, options: ["kyuri", "jinho", "mijin"], defaultValue: "kyuri", description:""
+        input name: "googleTTSPerson", title:"[ GOOGLE Cloud ] Select a TTS Type" , type: "enum", required: true, options: ["S-A", "S-B", "S-C", "S-D", "W-A", "W-B", "W-C", "W-D"], defaultValue: "S-A", description:""
 	}
 
 }
@@ -222,9 +224,36 @@ def playNaverTTS(text, level, person, speed){
     makeCommand("tts", [text, person, 0, "naver", level])
 }
 
+def _getGoogleTTSPerson(name){
+	def tmp = name.split("-")
+    def type = "Standard"
+    if(tmp[0] == "W"){
+   	 	type = "Wavenet"
+    }
+	return "ko-KR-${type}-${tmp[1]}"
+}
+
+def playGoogleTTS(text, level, person){
+	def personValue = _getGoogleTTSPerson(person)
+    makeCommand("tts", [text, personValue, level, "googleTTS"])
+}
+
 def speak(text) {
 	log.debug "Speak >> ${text}"
-	makeCommand("tts", [getTTSLanguage(), text, -1])
+	switch(ttsType){
+    case "google":
+		makeCommand("tts", [getTTSLanguage(), text, -1])
+    	break
+    case "oddcast":
+    	makeCommand("tts", [text, ttsPerson, -1, "oddcast"])
+    	break
+    case "naver":
+    	makeCommand("tts", [text, ttsNPerson, 0, "naver", -1])
+    	break
+    case "googleTTS":
+    	makeCommand("tts", [text, _getGoogleTTSPerson(googleTTSPerson), -1, "googleTTS"])
+    	break
+    }
 }
 
 def playMp3(String name){
