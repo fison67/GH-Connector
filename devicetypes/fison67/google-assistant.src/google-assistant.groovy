@@ -1,5 +1,5 @@
 /**
- *  Google Assistant (v.0.0.2)
+ *  Google Assistant (v.0.0.3)
  *
  * MIT License
  *
@@ -38,7 +38,7 @@ metadata {
 	}
 
     preferences {
-        input name: "voice", title:"Select a Voice", type: "enum", required: true, options: ["google_ko-KR", "naver_kyuri", "naver_jinho", "naver_mijin", "oddcast_dayoung", "oddcast_hyeryun", "oddcast_hyuna", "oddcast_jihun", "oddcast_jimin", "oddcast_junwoo", "oddcast_narae", "oddcast_sena", "oddcast_yumi", "oddcast_yura" ], defaultValue: "naver-kyuri"
+        input name: "voice", title:"Select a Voice", type: "enum", required: true, options: ["google_ko-KR", "googleTTS_ko-KR-Standard-A", "googleTTS_ko-KR-Standard-B", "googleTTS_ko-KR-Standard-C", "googleTTS_ko-KR-Standard-D", "googleTTS_ko-KR-Wavenet-A", "googleTTS_ko-KR-Wavenet-B", "googleTTS_ko-KR-Wavenet-C", "googleTTS_ko-KR-Wavenet-D", "naver_kyuri", "naver_jinho", "naver_mijin", "oddcast_dayoung", "oddcast_hyeryun", "oddcast_hyuna", "oddcast_jihun", "oddcast_jimin", "oddcast_junwoo", "oddcast_narae", "oddcast_sena", "oddcast_yumi", "oddcast_yura" ], defaultValue: "naver-kyuri"
 	}
     
 	simulator {
@@ -102,6 +102,18 @@ def makeMessage(_voice, data){
             deviceId: state.id.substring(10, state.id.length())
         ]
     	break
+     case "googleTTS":
+        result = [
+        	data:[
+                "message": data.text,
+                "volume": 0,
+                "type": type,
+                "person": voice,
+                "language": voice.substring(0, 5)
+            ],
+            deviceId: state.id.substring(10, state.id.length())
+        ]
+        break
     case "naver":
     	result = [
         	data:[
@@ -126,6 +138,7 @@ def makeMessage(_voice, data){
         ]
     	break
     }
+    log.debug result
 	return result
 }
 
