@@ -1,5 +1,5 @@
 /**
- *  Google Calendar (v.0.0.1)
+ *  Google Calendar (v.0.0.2)
  *
  * MIT License
  *
@@ -29,7 +29,7 @@
 */
 
 
-import groovy.json.JsonSlurper
+import groovy.json.*
 
 metadata {
 	definition (name: "Google Calendar", namespace: "fison67", author: "fison67") {
@@ -64,10 +64,10 @@ def parse(String description) {
 
 def setStatus(_data){
     def data = _data.data
-	log.debug data
+//	log.debug data
     
-    state._today = data.today.toString()
-    state._tomorrow = data.tomorrow.toString()
+    state._today = data.today
+    state._tomorrow = data.tomorrow
    
     sendEvent(name:"status", value: getScheduleTodayCount(), displayed: false )
     sendEvent(name:"todayCount", value: getScheduleTodayCount(), displayed: false )
@@ -78,11 +78,11 @@ def setStatus(_data){
 }
 
 def getScheduleTodayDataList(){
-	return new JsonSlurper().parseText(state._today)
+	return state._today
 }
 
 def getScheduleTomorrowyDataList(){
-	return new JsonSlurper().parseText(state._tomorrow)
+	return state._tomorrow
 }
 
 def getScheduleTodayCount(){
