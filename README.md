@@ -37,7 +37,7 @@ You need a Raspbery pi or Synology Nas to install GH Connector API Server(Defaul
 sudo mkdir /docker
 sudo mkdir /docker/gh-connector
 sudo chown -R pi:pi /docker
-docker pull fison67/gh-connector-rasp:beta
+docker pull fison67/gh-connector-rasp:0.0.2
 docker run -d --restart=always -v /docker/gh-connector:/config -v /yourMp3Folder:/music1 --name=gh-connector-rasp --net=host fison67/gh-connector-rasp:beta
 ```
 
