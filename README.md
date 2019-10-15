@@ -38,7 +38,7 @@ sudo mkdir /docker
 sudo mkdir /docker/gh-connector
 sudo chown -R pi:pi /docker
 docker pull fison67/gh-connector-rasp:0.0.2
-docker run -d --restart=always -v /docker/gh-connector:/config -v /yourMp3Folder:/music1 --name=gh-connector-rasp --net=host fison67/gh-connector-rasp:beta
+docker run -d --restart=always -v /docker/gh-connector:/config -v /yourMp3Folder:/music1 --name=gh-connector-rasp --net=host fison67/gh-connector-rasp:0.0.2
 ```
 
 ###### Synology nas<br/>
@@ -47,7 +47,7 @@ docker run -d --restart=always -v /docker/gh-connector:/config -v /yourMp3Folder
 make folder /docker/gh-connector
 Run Docker
 -> Registery 
--> Search fison67/gh-connector (beta version)
+-> Search fison67/gh-connector (0.0.2 version)
 -> Advanced Settings
 -> Volume tab -> folder -> Select gh-connector & Mount path '/config'
 -> Volume tab -> folder -> Select MP3 Folder & Mount path '/music1'
