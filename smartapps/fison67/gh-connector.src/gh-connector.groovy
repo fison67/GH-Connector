@@ -1,5 +1,5 @@
 /**
- *  GH Connector (v.0.0.8)
+ *  GH Connector (v.0.0.9)
  *
  * MIT License
  *
@@ -52,8 +52,8 @@ preferences {
 def mainPage() {
 	 dynamicPage(name: "mainPage", title: "GH Connector", nextPage: null, uninstall: true, install: true) {
    		section("Request New Devices"){
-        	input "address", "string", title: "Server address", required: true
-        	input "address2", "string", title: "Port forwarding Server address", required: false
+        	input "address", "text", title: "Server address", required: true
+        	input "address2", "text", title: "Port forwarding Server address", required: false
         	href url:"http://${settings.address}", style:"embedded", required:false, title:"Local Management", description:"This makes you easy to setup"
         	href url:"http://${settings.address2}", style:"embedded", required:false, title:"External Management", description:"This makes you easy to setup"
         }
