@@ -1,5 +1,5 @@
 /**
- *  Google Calendar (v.0.0.1)
+ *  Google Calendar (v.0.0.2)
  *
  * MIT License
  *
@@ -85,10 +85,23 @@ def setStatus(_data){
     
     state._today = data.today.toString()
     state._tomorrow = data.tomorrow.toString()
+    
+    if(data.todayAll == null){
+        state._todayAll = [].toString()
+    }else{
+        state._todayAll = data.todayAll.toString()
+    }
+    
+    if(data.tomorrowAll == null){
+        state._tomorrowAll = [].toString()
+    }else{
+        state._tomorrowAll = data.tomorrowAll.toString()
+    }
+    
    
     sendEvent(name:"status", value: getScheduleTodayCount(), displayed: false )
-    sendEvent(name:"todayCount", value: getScheduleTodayCount(), displayed: false )
-    sendEvent(name:"tomorrowCount", value: getScheduleTomorrowCount(), displayed: false )
+    sendEvent(name:"todayCount", value: getScheduleTodayCount() + getScheduleTodayAllCount(), displayed: false )
+    sendEvent(name:"tomorrowCount", value: getScheduleTomorrowCount() + getScheduleTomorrowAllCount(), displayed: false )
     
     sendEvent(name:"today", value: getScheduleTodayText() )
     sendEvent(name:"tomorrow", value: getScheduleTomorrowText() )
@@ -98,20 +111,41 @@ def getScheduleTodayDataList(){
 	return new JsonSlurper().parseText(state._today)
 }
 
+def getScheduleTodayAllDataList(){
+	return new JsonSlurper().parseText(state._todayAll)
+}
+
 def getScheduleTomorrowyDataList(){
 	return new JsonSlurper().parseText(state._tomorrow)
+}
+
+def getScheduleTomorrowyAllDataList(){
+	return new JsonSlurper().parseText(state._tomorrowAll)
 }
 
 def getScheduleTodayCount(){
     return getScheduleTodayDataList().size()
 }
 
+def getScheduleTodayAllCount(){
+    return getScheduleTodayAllDataList().size()
+}
+
 def getScheduleTomorrowCount(){
     return getScheduleTomorrowyDataList().size()
 }
 
+def getScheduleTomorrowAllCount(){
+    return getScheduleTomorrowyAllDataList().size()
+}
+
 def getScheduleToday(index){
     def data = getScheduleTodayDataList()
+    return data[index - 1]
+}
+
+def getScheduleAllToday(index){
+    def data = getScheduleTodayAllDataList()
     return data[index - 1]
 }
 
@@ -120,8 +154,18 @@ def getScheduleTomorrow(index){
     return data[index - 1]
 }
 
+def getScheduleTomorrowAll(index){
+    def data = getScheduleTomorrowyAllDataList()
+    return data[index - 1]
+}
+
 def getScheduleToday(index, type){
     def data = getScheduleTodayDataList()
+    return data[index - 1][type]
+}
+
+def getScheduleAllToday(index, type){
+    def data = getScheduleTodayAllDataList()
     return data[index - 1][type]
 }
 
@@ -130,16 +174,21 @@ def getScheduleTomorrow(index, type){
     return data[index - 1][type]
 }
 
+def getScheduleTomorrowAll(index, type){
+    def data = getScheduleTomorrowyAllDataList()
+    return data[index - 1][type]
+}
+
 def getScheduleTodayText(){
-	return processScheduleText("오늘", getScheduleTodayDataList())
+	return processScheduleText("오늘", getScheduleTodayDataList(), getScheduleTodayAllDataList())
 }
 
 def getScheduleTomorrowText(){
-	return processScheduleText("내일", getScheduleTomorrowyDataList())
+	return processScheduleText("내일", getScheduleTomorrowyDataList(), getScheduleTomorrowyAllDataList())
 }
 
-def processScheduleText(type, dataList){
-	def count = dataList.size()
+def processScheduleText(type, dataList, allDataList){
+	def count = dataList.size() + allDataList.size()
     def text = "${type}은 일정이 없습니다."
     if(count > 0){
     	def processCount = 0
@@ -160,10 +209,36 @@ def processScheduleText(type, dataList){
             }
             
             processCount++
-            if(processCount < count){
+            if(processCount < dataList.size()){
             	text = text + " 그리고 "
             }
         }
+        
+        if(processCount > 0 && allDataList.size() > 0){
+        	text = text + " 그리고 "
+        }
+    	def processAllCount = 0
+        allDataList.each { data ->
+            if(locationSet == "on"){
+            	if(data.location){
+                	text = text + data.location + "에서 "
+                }
+            }
+            text = text + data.name + " 종일 일정이 있습니다. "
+            
+            if(descriptionSet == "on"){
+            	if(data.description){
+                	text = text + " 추가 정보는 " + data.description + " 입니다. "
+                }
+            }
+            
+            processAllCount++
+            if(processAllCount < allDataList.size()){
+            	text = text + " 그리고 "
+            }
+        }
+        
+        
     }
     return text
 }
