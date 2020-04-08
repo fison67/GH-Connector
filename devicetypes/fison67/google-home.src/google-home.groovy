@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.11)
+ * Google Home (v.0.0.12)
  *
  * MIT License
  *
@@ -42,6 +42,7 @@ metadata {
                
         command "playText", ["string"]
         command "playText", ["string", "number"]
+        command "playYoutube", ["string"]
         command "playMp3", ["string"]
         command "playMp3", ["string", "number"]
         command "playTTS", ["string", "number", "string"]
@@ -292,6 +293,10 @@ def speak(text) {
     	makeCommand("tts", [text, _getGoogleTTSPerson(googleTTSPerson), -1, "googleTTS"])
     	break
     }
+}
+
+def playYoutube(String ids){
+    makeCommand("youtube", [ids, -1])
 }
 
 def playMp3(String name){
