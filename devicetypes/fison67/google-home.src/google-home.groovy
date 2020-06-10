@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.12)
+ * Google Home (v.0.0.13)
  *
  * MIT License
  *
@@ -40,6 +40,8 @@ metadata {
         capability "Speech Synthesis"
         capability "Switch"
                
+        command "pause"
+		command "resume"
         command "playText", ["string"]
         command "playText", ["string", "number"]
         command "playYoutube", ["string"]
@@ -135,6 +137,14 @@ def previousTrack(){
 def nextTrack(){
 	def time = state.totalTime as Integer
 	makeCommand("seek", time)
+}
+
+def resume(){
+	makeCommand("resume", [])
+}
+
+def pause(){
+	makeCommand("pause", [])
 }
 
 def on(){
