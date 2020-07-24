@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.13)
+ * Google Home (v.0.0.14)
  *
  * MIT License
  *
@@ -60,7 +60,7 @@ metadata {
         input name: "ttsType", title:"Select a TTS Type" , type: "enum", required: true, options: ["google", "oddcast", "naver", "googleTTS"], defaultValue: "google", description:""
         input name: "ttsPerson", title:"[ ODDCAST ] Select a Person" , type: "enum", required: true, options: ["dayoung", "hyeryun", "hyuna", "jihun", "jimin", "junwoo", "narae", "sena", "yumi", "yura"], defaultValue: "dayoung", description:""
         input name: "ttsLanguage", title:"[ GOOGLE ] Select a TTS language" , type: "enum", required: true, options: ["ko-KR", "en-US", "en-GB", "en-AU", "en-SG", "en-CA", "de-DE", "fr-FR", "fr-CA", "ja-JP", "es-ES", "pt-BR", "it-IT", "ru-RU", "hi-IN", "th-TH", "id-ID", "da-DK", "no-NO", "nl-NL", "sv-SE"], defaultValue: "ko-KR", description:""
-		input name: "ttsNPerson", title:"[ NAVER ] Select a Person" , type: "enum", required: true, options: ["nara", "kyuri", "jinho", "mijin", "clara", "matt", "shinji", "meimei", "liangliang", "jose", "carmen"], defaultValue: "kyuri", description:""
+		input name: "ttsNPerson", title:"[ NAVER ] Select a Person" , type: "enum", required: true, options: ["dinna", "nara", "kyuri", "jinho", "mijin", "dsangjin", "djiyun", "clara", "matt", "shinji", "meimei", "liangliang", "jose", "carmen"], defaultValue: "kyuri", description:""
         input name: "googleTTSPerson", title:"[ GOOGLE Cloud ] Select a Person" , type: "enum", required: true, options: ["S-A", "S-B", "S-C", "S-D", "W-A", "W-B", "W-C", "W-D"], defaultValue: "S-A", description:""
 	}
 
@@ -402,7 +402,6 @@ def makeCommand(type, value){
         "cmd": type,
         "data": value
     ]
-    log.debug body
     def options = makeCommand(body)
     sendCommand(options, null)
 }
@@ -433,6 +432,7 @@ def makeCommand(body){
         ],
         "body":body
     ]
+    log.debug options
     return options
 }
 
