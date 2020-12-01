@@ -1,5 +1,5 @@
 /**
- * Google Home PlayList (v.0.0.1)
+ * Google Home PlayList (v.0.0.2)
  *
  * MIT License
  *
@@ -33,10 +33,11 @@ import java.util.concurrent.TimeUnit
 
 
 metadata {
-	definition (name: "Google Home PlayList", namespace: "fison67", author: "fison67") {
+	definition (name: "Google Home PlayList", namespace: "fison67", author: "fison67", mnmn:"SmartThings", vid: "generic-switch") {
         capability "Actuator"
 		capability "Switch"
-        
+     
+     	command "stopGoogleHome"
 	}
 
 	simulator {
@@ -88,8 +89,8 @@ def on(){
     sendEvent(name:"switch", value: "on", displayed:false )
 }
 
-def off(){
-    makeCommand( getDataList() )
+def off(){ 
+	stopGoogleHome()
     runIn(10, setRepeatMode)
     sendEvent(name:"switch", value: "off", displayed:false )
 }
@@ -103,8 +104,7 @@ def setRepeatMode(){
     _sendCommand(options, null)
 }
 
-def updated() {
-}
+def updated() {}
 
 def getRepeatMode(){
 	def repeatMode = settings.repeatMode
@@ -143,10 +143,30 @@ def _makeCommand(body, method){
      	"method": "POST",
         "path": "/googleHome/api/${state.id}/${method}",
         "headers": [
-        	"HOST": state.appURL,
+        	"HOST": parent._getServerURL(),
             "Content-Type": "application/json;charset=utf-8"
         ],
         "body":body
     ]
     return options
+}
+
+def stopGoogleHome(){
+    def body = [
+        "id": state.id,
+        "target": state.targetAddress,
+        "cmd": "stop",
+        "data": []
+    ]
+    
+    def options = [
+     	"method": "POST",
+        "path": "/googleHome/api/control",
+        "headers": [
+        	"HOST": parent._getServerURL(),
+            "Content-Type": "application/json;charset=utf-8"
+        ],
+        "body":body
+    ]
+    _sendCommand(options, null)
 }
