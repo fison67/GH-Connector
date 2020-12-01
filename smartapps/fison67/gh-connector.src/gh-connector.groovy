@@ -1,5 +1,5 @@
 /**
- *  GH Connector (v.0.0.9)
+ *  GH Connector (v.0.0.10)
  *
  * MIT License
  *
@@ -48,7 +48,6 @@ preferences {
    page(name: "langPage")
 }
 
-
 def mainPage() {
 	 dynamicPage(name: "mainPage", title: "GH Connector", nextPage: null, uninstall: true, install: true) {
    		section("Request New Devices"){
@@ -63,6 +62,10 @@ def mainPage() {
             href url:"${apiServerUrl("/api/smartapps/installations/${app.id}/config?access_token=${state.accessToken}")}", style:"embedded", required:false, title:"Config", description:"Tap, select, copy, then click \"Done\""
        	}
     }
+}
+
+def _getServerURL(){
+     return settings.address
 }
 
 def installed() {
