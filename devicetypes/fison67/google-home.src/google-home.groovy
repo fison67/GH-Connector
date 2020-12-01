@@ -43,8 +43,9 @@ metadata {
         capability "Audio Notification"
         capability "Speech Synthesis"
         
+        command "playTrack", ["string", "number"]
         command "playText", ["string", "number"]
-        command "playYoutube", ["string"]
+        command "playYoutube", ["string", "number"]
         command "playMp3", ["string", "number"]
         command "playOddcastTTS", ["string", "string", "number"]
         command "playNaverTTS", ["string", "string", "number", "number"]
@@ -305,12 +306,13 @@ def playGoogleTTS(text, voice, volume=-1){
     ])
 }
 
-def playNaverNews(type="속보", count=1, name="dinna", volume=-1){
+def playNaverNews(type="속보", count=1, voice="dinna", volume=-1){
+	log.debug "${type}, ${count}, ${voice}, ${volume}"
     makeCommand("naver-news", [
     	"data":[
         	"type":type, 
             "count":count,
-            "name":name, 
+            "voice":voice, 
             "volume": volume
         ]
     ])
@@ -359,8 +361,11 @@ def speak(text) {
     }
 }
 
-def playYoutube(String ids){
-    makeCommand("youtube", [ids, -1])
+def playYoutube(String ids, volume=-1){
+    makeCommand("youtube", [
+        "ids":ids, 
+        "volume": volume
+    ])
 }
 
 def playMp3(name, volume=-1){
@@ -370,9 +375,9 @@ def playMp3(name, volume=-1){
     ])
 }
 
-def playTrack(url, volume){
+def playTrack(url, volume=-1){
 	makeCommand("playURL", [
-        "URL":url, 
+        "url":url, 
         "volume": volume
     ])
 }
