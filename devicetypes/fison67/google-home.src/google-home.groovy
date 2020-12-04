@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.15)
+ * Google Home (v.0.0.16)
  *
  * MIT License
  *
@@ -363,7 +363,7 @@ def speak(text) {
 
 def playYoutube(String ids, volume=-1){
     makeCommand("youtube", [
-        "ids":ids, 
+        "list":ids.split(","), 
         "volume": volume
     ])
 }
