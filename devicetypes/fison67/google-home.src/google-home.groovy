@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.16)
+ * Google Home (v.0.0.17)
  *
  * MIT License
  *
@@ -90,6 +90,10 @@ def setAddress(String appURL){
 
 def setExternalAddress(address){
 	state.externalAddress = address
+}
+
+def playTrackAndResume(url, volume) {
+    playTrack(url, -1)
 }
 
 def previousTrack(){
