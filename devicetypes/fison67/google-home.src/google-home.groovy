@@ -1,5 +1,5 @@
 /**
- * Google Home (v.0.0.17)
+ * Google Home (v.0.0.18)
  *
  * MIT License
  *
@@ -43,6 +43,7 @@ metadata {
         capability "Audio Notification"
         capability "Speech Synthesis"
         
+        command "resume"
         command "playTrack", ["string", "number"]
         command "playText", ["string", "number"]
         command "playYoutube", ["string", "number"]
