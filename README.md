@@ -69,13 +69,15 @@ You must enable OAuth.
 TTS
 address : /googleHome/api/:googleHomeID/tts (GET, POST)
 param
-a. message
-b. lang
-c. volume
-d. speed
-
+A. type (oddcast, naver, kakao, googleTTS, google)
+ a. oddcast (message, voice, volume)
+ b. naver (message, voice, speed, volume)
+ c. kakao (message, engine, voice, tone, volume)
+ d. googleTTS (message, lang, voice, gender, volume)
+ e. google (message, lang, speed, volume)
+ 
 ex) docker address(192.168.0.100), googleHomeID(xxxxxxxxxxxxxxx)
-http://192.168.0.100:30010/googleHome/api/xxxxxxxxxxxxxxx/tts?message=test&lang=ko&volume=20
+http://192.168.0.100:30010/googleHome/api/xxxxxxxxxxxxxxx/tts?message=test&lang=ko&volume=20&type=naver
 ```
 ```
 Play MP3
