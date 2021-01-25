@@ -77,7 +77,7 @@ A. type (oddcast, naver, kakao, googleTTS, google)
  e. google (message, lang, speed, volume)
  
 ex) docker address(192.168.0.100), googleHomeID(xxxxxxxxxxxxxxx)
-http://192.168.0.100:30010/googleHome/api/xxxxxxxxxxxxxxx/tts?message=test&lang=ko&volume=20&type=naver
+http://192.168.0.100:30010/googleHome/api/xxxxxxxxxxxxxxx/tts?message=test&lang=ko&volume=20&type=google
 ```
 ```
 Play MP3
